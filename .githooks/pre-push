@@ -1,0 +1,15 @@
+#!/bin/sh
+# Pre-push hook for NitroStack
+
+echo "Running pre-push checks..."
+
+# Run all tests (unit, integration, performance)
+echo "Running all tests..."
+PYTHONPATH=$(pwd) pytest tests/
+if [ $? -ne 0 ]; then
+    echo "Tests failed. Please fix the issues before pushing."
+    exit 1
+fi
+
+echo "Pre-push checks passed successfully."
+exit 0

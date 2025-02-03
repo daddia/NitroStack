@@ -1,20 +1,22 @@
-# tests/utilities/test_rate_limiter.py
-
 import pytest
-from unittest.mock import MagicMock, patch
-from src.utilities.rate_limiter import rate_limiter
+from unittest.mock import MagicMock
+from utilities.rate_limiter import rate_limiter
 
-@patch("src.utilities.rate_limiter.redis.StrictRedis")
-def test_rate_limiter(mock_redis):
-    mock_client = MagicMock()
-    mock_redis.return_value = mock_client
-    mock_client.incr.return_value = 1
+def test_rate_limiter():
+    # Mock Redis client
+    mock_redis_client = MagicMock()
+    
+    # Mock the 'incr' and 'expire' methods
+    mock_redis_client.incr.return_value = 1
+    mock_redis_client.expire.return_value = True
 
+    # Test when the rate limit has NOT been exceeded
     try:
-        rate_limiter("test_key", limit=3, window=10)
+        rate_limiter("test_key", limit=3, window=10, redis_client=mock_redis_client)
     except Exception:
         pytest.fail("Rate limiter should not raise an exception")
 
-    mock_client.incr.return_value = 4
+    # Simulate exceeding the rate limit
+    mock_redis_client.incr.return_value = 4  # Simulate hitting the limit
     with pytest.raises(Exception, match="Rate limit exceeded"):
-        rate_limiter("test_key", limit=3, window=10)
+        rate_limiter("test_key", limit=3, window=10, redis_client=mock_redis_client)

@@ -1,0 +1,31 @@
+#!/bin/sh
+# Pre-commit hook for NitroStack
+
+echo "Running pre-commit checks..."
+
+# Lint the code with flake8
+echo "Linting with flake8..."
+flake8 src tests
+if [ $? -ne 0 ]; then
+    echo "Linting failed. Please fix the issues before committing."
+    exit 1
+fi
+
+# Format code with black (in check mode)
+echo "Checking code format with black..."
+black --check src tests
+if [ $? -ne 0 ]; then
+    echo "Code is not properly formatted. Run 'black src tests' to format."
+    exit 1
+fi
+
+# Run unit tests
+echo "Running unit tests..."
+PYTHONPATH=$(pwd) pytest tests/unit
+if [ $? -ne 0 ]; then
+    echo "Unit tests failed. Please fix the issues before committing."
+    exit 1
+fi
+
+echo "Pre-commit checks passed successfully."
+exit 0
