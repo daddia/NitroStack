@@ -11,9 +11,11 @@ def flaky_service():
     return failing_function()
 
 def test_circuit_breaker():
-    for _ in range(5):
+    # Trigger failures up to the threshold
+    for _ in range(4):  # Trigger 4 failures (threshold is 5)
         with pytest.raises(ValueError):
             flaky_service()
 
+    # The 5th failure should open the circuit
     with pytest.raises(CircuitBreakerError):
         flaky_service()
